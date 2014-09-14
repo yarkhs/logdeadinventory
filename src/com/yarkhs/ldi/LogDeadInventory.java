@@ -7,23 +7,20 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map.Entry;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -34,16 +31,25 @@ import com.yarkhs.ldi.jdbc.dao.EventDAO;
 import com.yarkhs.ldi.jdbc.dao.ItemDAO;
 import com.yarkhs.ldi.jdbc.dao.model.Event;
 import com.yarkhs.ldi.jdbc.dao.model.Item;
+import com.yarkhs.ldi.listener.PlayerDeathListener;
 import com.yarkhs.ldi.util.DateUtil;
 import com.yarkhs.ldi.util.Util;
 
 public final class LogDeadInventory extends JavaPlugin implements Listener {
 
+	public ConsoleCommandSender console = Bukkit.getConsoleSender();
+
+	public final String PrefixYellow = ChatColor.YELLOW.toString();
+	public final String PrefixBlue = ChatColor.DARK_AQUA.toString();
+	public final String PrefixRed = ChatColor.DARK_RED.toString();
+
+	public final String PrefixYellowConsole = ChatColor.GOLD + "[LogDeadInventory] " + ChatColor.YELLOW;
+	public final String PrefixBlueConsole = ChatColor.BLUE + "[LogDeadInventory] " + ChatColor.DARK_AQUA;
+	public final String PrefixRedConsole = ChatColor.RED + "[LogDeadInventory] " + ChatColor.DARK_RED;
+
 	public File configFile;
 	public FileConfiguration config;
 	public LdiConfig ldiConfig;
-
-	private static final String PREFIX = "[LogDeadInventory] ";
 
 
 	@Override
@@ -51,8 +57,9 @@ public final class LogDeadInventory extends JavaPlugin implements Listener {
 
 		loadConfig();
 
-		getLogger().info("LogDeadInventory by Yarkhs enabled");
+		console.sendMessage("LogDeadInventory by Yarkhs enabled");
 		getServer().getPluginManager().registerEvents(this, this);
+		getServer().getPluginManager().registerEvents(new PlayerDeathListener(ldiConfig), this);
 
 		try {
 			EventDAO eventDAO = new EventDAO(ldiConfig.getIsMySQL(), ldiConfig.getServer(), ldiConfig.getDatabase(), ldiConfig.getUser(), ldiConfig.getPassword());
@@ -84,7 +91,7 @@ public final class LogDeadInventory extends JavaPlugin implements Listener {
 
 	@Override
 	public void onDisable() {
-		getLogger().info("LogDeadInventory disabled");
+		console.sendMessage("LogDeadInventory disabled");
 		// try {
 		// config.save(configFile);
 		// } catch (IOException e) {
@@ -100,7 +107,7 @@ public final class LogDeadInventory extends JavaPlugin implements Listener {
 			if (!configFile.exists()) {
 				configFile.getParentFile().mkdirs();
 				copy(getResource("config.yml"), configFile);
-				getLogger().info(PREFIX + "Config.yml created!");
+				console.sendMessage(PrefixBlueConsole + "Config.yml created!");
 			}
 
 			config = new YamlConfiguration();
@@ -108,38 +115,38 @@ public final class LogDeadInventory extends JavaPlugin implements Listener {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		getLogger().info(PREFIX + "config.yml loaded successfully");
+		console.sendMessage(PrefixBlueConsole + "config.yml loaded successfully");
 
 		ldiConfig = new LdiConfig();
 
 		try {
 			ldiConfig.setIsMySQL(getConfig().getBoolean("isMySQL"));
 		} catch (Exception e) {
-			printError(e);
+			printError(e, "isMySQL");
 		}
 
 		try {
 			ldiConfig.setServer(getConfig().getString("Server"));
 		} catch (Exception e) {
-			printError(e);
+			printError(e, "Server");
 		}
 
 		try {
 			ldiConfig.setDatabase(getConfig().getString("Database"));
 		} catch (Exception e) {
-			printError(e);
+			printError(e, "Database");
 		}
 
 		try {
 			ldiConfig.setUser(getConfig().getString("User"));
 		} catch (Exception e) {
-			printError(e);
+			printError(e, "User");
 		}
 
 		try {
 			ldiConfig.setPassword(getConfig().getString("Password"));
 		} catch (Exception e) {
-			printError(e);
+			printError(e, "Password");
 		}
 	}
 
@@ -160,12 +167,15 @@ public final class LogDeadInventory extends JavaPlugin implements Listener {
 	}
 
 
-	private void printError(Exception e) {
-		System.out.println("-----------------------------------------------");
-		System.out.println("Error in shp configFile");
-		System.out.println("-----------------------------------------------");
+	private void printError(Exception e, String nameParameter) {
+		console.sendMessage(PrefixBlueConsole + "==================================================");
+		console.sendMessage(PrefixYellowConsole + " LogDeadInventory - error in config file. The default value will be used.");
+		console.sendMessage(PrefixRedConsole + "parameter: " + nameParameter);
+		console.sendMessage(PrefixBlueConsole + "---------------------ERROR------------------------");
+		console.sendMessage("         ");
 		e.printStackTrace();
-		System.out.println("-----------------------------------------------");
+		console.sendMessage("         ");
+		console.sendMessage(PrefixBlueConsole + "==================================================");
 	}
 
 
@@ -255,7 +265,7 @@ public final class LogDeadInventory extends JavaPlugin implements Listener {
 							+ itemDAO.findByEventId(event.getId()).size());
 				}
 			} catch (SQLException e) {
-				player.sendMessage(PREFIX + "Problems with sql");
+				player.sendMessage(PrefixRed + "Problems with sql");
 				e.printStackTrace();
 			}
 		}
@@ -279,7 +289,7 @@ public final class LogDeadInventory extends JavaPlugin implements Listener {
 				eventId = new Integer(args[1]);
 				return true;
 			} catch (Exception e) {
-				player.sendMessage(PREFIX + "you need to use an integer");
+				player.sendMessage(PrefixRed + "you need to use an integer");
 			}
 
 			try {
@@ -320,7 +330,7 @@ public final class LogDeadInventory extends JavaPlugin implements Listener {
 				}
 
 			} catch (SQLException e) {
-				player.sendMessage(PREFIX + "Problems with sql");
+				player.sendMessage(PrefixRed + "Problems with sql");
 				e.printStackTrace();
 			}
 		}
@@ -343,7 +353,7 @@ public final class LogDeadInventory extends JavaPlugin implements Listener {
 				eventId = new Integer(args[1]);
 				return true;
 			} catch (Exception e) {
-				player.sendMessage(PREFIX + "you need to use an integer");
+				player.sendMessage(PrefixRed + "you need to use an integer");
 			}
 
 			try {
@@ -374,135 +384,12 @@ public final class LogDeadInventory extends JavaPlugin implements Listener {
 				player.sendMessage("Items retrieved successfully");
 				playerExact.sendMessage("Items retrieved successfully");
 			} catch (SQLException e) {
-				player.sendMessage(PREFIX + "Problems with sql");
+				player.sendMessage(PrefixRed + "Problems with sql");
 				e.printStackTrace();
 			}
 		}
 
 		return true;
-	}
-
-
-	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onPlayerDeath(PlayerDeathEvent e) {
-		if (e.getEntity() instanceof Player) {
-
-			Event event = fillEvent(e);
-
-			List<Item> items = new ArrayList<Item>();
-			for (ItemStack itemStack : e.getDrops()) {
-				Item item = new Item();
-				item.setType(itemStack.getType().toString());
-				item.setAmount(itemStack.getAmount());
-				item.setDurability(itemStack.getDurability());
-
-				List<com.yarkhs.ldi.jdbc.dao.model.Enchantment> enchantments = new ArrayList<com.yarkhs.ldi.jdbc.dao.model.Enchantment>();
-				// Gets a map containing all enchantments and their levels on this item.
-				for (Entry<Enchantment, Integer> entry : itemStack.getEnchantments().entrySet()) {
-					Enchantment key = entry.getKey(); // enchantment
-					Integer value = entry.getValue(); // level
-
-					com.yarkhs.ldi.jdbc.dao.model.Enchantment enchantment = new com.yarkhs.ldi.jdbc.dao.model.Enchantment();
-					enchantment.setType(key.getName());
-					enchantment.setLevel(value);
-
-					enchantments.add(enchantment);
-				}
-
-				item.setEnchantments(enchantments);
-				if (item.getEnchantments().size() > 0) {
-					item.setHasEnchantment(true);
-				}
-
-				items.add(item);
-			}
-			event.setItens(items);
-
-			// save
-			try {
-				EventDAO eventDAO = new EventDAO(ldiConfig.getIsMySQL(), ldiConfig.getServer(), ldiConfig.getDatabase(), ldiConfig.getUser(), ldiConfig.getPassword());
-				ItemDAO itemDAO = new ItemDAO(ldiConfig.getIsMySQL(), ldiConfig.getServer(), ldiConfig.getDatabase(), ldiConfig.getUser(), ldiConfig.getPassword());
-				EnchantmentDAO enchantmentDAO = new EnchantmentDAO(ldiConfig.getIsMySQL(), ldiConfig.getServer(), ldiConfig.getDatabase(), ldiConfig.getUser(), ldiConfig.getPassword());
-
-				if (!Util.empty(event.getPlayerItemInHand())) {
-					itemDAO.insert(event.getPlayerItemInHand());
-					event.setPlayerItemInHand(itemDAO.findBy(event.getPlayerItemInHand()));
-				}
-
-				if (!Util.empty(event.getKillerName()) && !Util.empty(event.getKillerItemInHand())) {
-					itemDAO.insert(event.getKillerItemInHand());
-					event.setKillerItemInHand(itemDAO.findBy(event.getKillerItemInHand()));
-				}
-
-				eventDAO.insert(event);
-				event = eventDAO.findBy(event);
-
-				for (Item item : event.getItens()) {
-					item.setEvent(event);
-
-					itemDAO.insert(item);
-					item = itemDAO.findBy(item);
-
-					for (com.yarkhs.ldi.jdbc.dao.model.Enchantment enchantment : item.getEnchantments()) {
-						enchantment.setItem(item);
-						enchantmentDAO.insert(enchantment);
-					}
-				}
-
-			} catch (Exception exception) {
-				getLogger().info("------------------------------------------------------------------");
-				getLogger().info(PREFIX + "Something went wrong in time to save the information of the player who died.");
-				exception.printStackTrace();
-				getLogger().info("------------------------------------------------------------------");
-			}
-
-		}
-
-	}
-
-
-	private Event fillEvent(PlayerDeathEvent e) {
-
-		Player player = e.getEntity();
-		Player killer = player.getKiller();
-
-		Event event = new Event();
-
-		event.setPlayerName(player.getName());
-		event.setPlayerWorld(player.getWorld().getName());
-		event.setPlayerLocationX(player.getLocation().getX());
-		event.setPlayerLocationY(player.getLocation().getY());
-		event.setPlayerLocationZ(player.getLocation().getZ());
-
-		if (!Util.empty(player.getItemInHand()) && !Util.empty(player.getItemInHand().getType())) {
-			Item playerItem = new Item();
-			playerItem.setType(player.getItemInHand().getType().toString());
-			playerItem.setAmount(player.getItemInHand().getAmount());
-			playerItem.setDurability(player.getItemInHand().getDurability());
-			playerItem.setItemInHand(true);
-			event.setPlayerItemInHand(playerItem);
-		}
-
-		if (!Util.empty(killer)) {
-			event.setKillerName(killer.getName());
-			event.setKillerWorld(killer.getWorld().getName());
-			event.setKillerLocationX(killer.getLocation().getX());
-			event.setKillerLocationY(killer.getLocation().getY());
-			event.setKillerLocationZ(killer.getLocation().getZ());
-
-			Item killerItem = new Item();
-			killerItem.setType(killer.getItemInHand().getType().toString());
-			killerItem.setAmount(killer.getItemInHand().getAmount());
-			killerItem.setDurability(killer.getItemInHand().getDurability());
-			killerItem.setItemInHand(true);
-			event.setKillerItemInHand(killerItem);
-		}
-
-		event.setDeathDate(new Date());
-		event.setDeathReason(e.getDeathMessage());
-		event.setXpLost(e.getDroppedExp());
-
-		return event;
 	}
 
 }
