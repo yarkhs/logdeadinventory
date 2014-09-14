@@ -1,0 +1,6 @@
+name: LogDeadInventory
+main: com.yarkhs.ldi.LogDeadInventory
+version: 1.0
+commands:
+   logDeadInventory:
+      aliases: ['ldi']

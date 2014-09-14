@@ -1,0 +1,6 @@
+#mysql false = sqlite
+isMySQL: false
+Server: Localhost
+Database: ldi
+User: root
+Password: root
