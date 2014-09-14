@@ -30,6 +30,7 @@ public class ItemDAO implements BaseDAO {
 		sql.append(" CREATE TABLE IF NOT EXISTS ldi_items ( ");
 		sql.append("		id INT AUTO_INCREMENT, ");
 		sql.append("		type varchar(40), ");
+		sql.append("		type_id INT, ");
 		sql.append("		amount INT, ");
 		sql.append("		durability SMALLINT, ");
 		sql.append("		event_id INT, ");
@@ -59,6 +60,7 @@ public class ItemDAO implements BaseDAO {
 		sql.append(" CREATE TABLE IF NOT EXISTS ldi_items ( ");
 		sql.append("		id INTEGER PRIMARY KEY AUTOINCREMENT,");
 		sql.append("		type text, ");
+		sql.append("		type_id INTEGER, ");
 		sql.append("		amount INTEGER, ");
 		sql.append("		durability INTEGER, ");
 		sql.append("		event_id INTEGER, ");
@@ -85,13 +87,13 @@ public class ItemDAO implements BaseDAO {
 		Item item = (Item) object;
 		StringBuffer sql = new StringBuffer();
 
-		sql.append("insert into ldi_items (type, amount, durability, item_in_hand, has_enchantment");
+		sql.append("insert into ldi_items (type, amount, durability, item_in_hand, has_enchantment, type_id");
 
 		if (!Util.empty(item.getEvent())) {
 			sql.append(", event_id");
 		}
 
-		sql.append(") values (?,?,?,?,?");
+		sql.append(") values (?,?,?,?,?,?");
 
 		if (!Util.empty(item.getEvent())) {
 			sql.append(",?");
@@ -106,9 +108,10 @@ public class ItemDAO implements BaseDAO {
 		stmt.setInt(3, item.getDurability());
 		stmt.setBoolean(4, item.getItemInHand());
 		stmt.setBoolean(5, item.getHasEnchantment());
+		stmt.setInt(6, item.getTypeId());
 
 		if (!Util.empty(item.getEvent())) {
-			stmt.setInt(6, item.getEvent().getId());
+			stmt.setInt(7, item.getEvent().getId());
 		}
 
 		try {
@@ -133,6 +136,7 @@ public class ItemDAO implements BaseDAO {
 			Item itemDatabase = new Item();
 			itemDatabase.setId(rs.getInt("id"));
 			itemDatabase.setType(rs.getString("type"));
+			itemDatabase.setTypeId(rs.getInt("type_id"));
 			itemDatabase.setAmount(rs.getInt("amount"));
 			itemDatabase.setDurability(rs.getShort("durability"));
 			itemDatabase.setItemInHand(rs.getBoolean("item_in_hand"));
@@ -175,6 +179,7 @@ public class ItemDAO implements BaseDAO {
 		while (rs.next()) {
 			item.setId(rs.getInt("id"));
 			item.setType(rs.getString("type"));
+			item.setTypeId(rs.getInt("type_id"));
 			item.setAmount(rs.getInt("amount"));
 			item.setDurability(rs.getShort("durability"));
 			item.setItemInHand(rs.getBoolean("item_in_hand"));
@@ -200,6 +205,7 @@ public class ItemDAO implements BaseDAO {
 			Item itemDatabase = new Item();
 			itemDatabase.setId(rs.getInt("id"));
 			itemDatabase.setType(rs.getString("type"));
+			itemDatabase.setTypeId(rs.getInt("type_id"));
 			itemDatabase.setAmount(rs.getInt("amount"));
 			itemDatabase.setDurability(rs.getShort("durability"));
 			itemDatabase.setItemInHand(rs.getBoolean("item_in_hand"));
@@ -219,7 +225,7 @@ public class ItemDAO implements BaseDAO {
 
 		StringBuffer sql = new StringBuffer();
 
-		sql.append("select id from ldi_items where type=? and amount=? and durability=? and item_in_hand=? and has_enchantment=? ");
+		sql.append("select id from ldi_items where type=? and amount=? and durability=? and item_in_hand=? and has_enchantment=? and type_id=? ");
 
 		if (!Util.empty(item.getEvent())) {
 			sql.append("and event_id=?");
@@ -231,9 +237,10 @@ public class ItemDAO implements BaseDAO {
 		stmt.setInt(3, item.getDurability());
 		stmt.setBoolean(4, item.getItemInHand());
 		stmt.setBoolean(5, item.getHasEnchantment());
+		stmt.setInt(6, item.getTypeId());
 
 		if (!Util.empty(item.getEvent())) {
-			stmt.setInt(6, item.getEvent().getId());
+			stmt.setInt(7, item.getEvent().getId());
 		}
 
 		ResultSet rs = stmt.executeQuery();
@@ -252,7 +259,7 @@ public class ItemDAO implements BaseDAO {
 	public void update(Object object) throws SQLException {
 
 		Item item = (Item) object;
-		String sql = "update ldi_items set type=?, amount=?, durability=?, item_in_hand=?, has_enchantment, event_id=? where id=?";
+		String sql = "update ldi_items set type=?, amount=?, durability=?, item_in_hand=?, has_enchantment, event_id=?, type_id=? where id=?";
 		PreparedStatement stmt = connection.prepareStatement(sql);
 
 		stmt.setString(1, item.getType());
@@ -260,35 +267,8 @@ public class ItemDAO implements BaseDAO {
 		stmt.setInt(3, item.getDurability());
 		stmt.setBoolean(4, item.getItemInHand());
 		stmt.setBoolean(5, item.getHasEnchantment());
-		stmt.setInt(6, item.getEvent().getId());
-
-		try {
-			stmt.execute();
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			stmt.close();
-		}
-	}
-
-
-	public void alterTableAddTypeMySql() throws SQLException {
-		String sql = "alter table lid_items add type varchar(40)";
-		PreparedStatement stmt = connection.prepareStatement(sql.toString());
-
-		try {
-			stmt.execute();
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			stmt.close();
-		}
-	}
-
-
-	public void alterTableAddTypeSqlite() throws SQLException {
-		String sql = "alter table lid_items add type text";
-		PreparedStatement stmt = connection.prepareStatement(sql.toString());
+		stmt.setInt(6, item.getTypeId());
+		stmt.setInt(7, item.getEvent().getId());
 
 		try {
 			stmt.execute();

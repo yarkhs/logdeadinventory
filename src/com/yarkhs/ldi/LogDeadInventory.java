@@ -287,9 +287,9 @@ public final class LogDeadInventory extends JavaPlugin implements Listener {
 
 			try {
 				eventId = new Integer(args[1]);
-				return true;
 			} catch (Exception e) {
 				player.sendMessage(PrefixRed + "you need to use an integer");
+				return true;
 			}
 
 			try {
@@ -351,9 +351,9 @@ public final class LogDeadInventory extends JavaPlugin implements Listener {
 
 			try {
 				eventId = new Integer(args[1]);
-				return true;
 			} catch (Exception e) {
 				player.sendMessage(PrefixRed + "you need to use an integer");
+				return true;
 			}
 
 			try {
@@ -368,7 +368,7 @@ public final class LogDeadInventory extends JavaPlugin implements Listener {
 				PlayerInventory inventory = playerExact.getInventory();
 
 				for (Item item : itemDAO.findByEventId(eventId)) {
-					ItemStack itemstack = new ItemStack(Material.getMaterial(item.getType()), item.getAmount(), item.getDurability());
+					ItemStack itemstack = new ItemStack(Material.getMaterial(item.getTypeId()), item.getAmount(), item.getDurability());
 
 					if (item.getHasEnchantment()) {
 						item.setEnchantments(enchantmentDAO.findByItemId(item.getId()));

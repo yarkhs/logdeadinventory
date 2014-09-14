@@ -55,6 +55,7 @@ public class PlayerDeathListener implements Listener {
 			for (ItemStack itemStack : e.getDrops()) {
 				Item item = new Item();
 				item.setType(itemStack.getType().toString());
+				item.setTypeId(itemStack.getTypeId());
 				item.setAmount(itemStack.getAmount());
 				item.setDurability(itemStack.getDurability());
 
@@ -130,34 +131,42 @@ public class PlayerDeathListener implements Listener {
 
 		Event event = new Event();
 
-		event.setPlayerName(player.getName());
-		event.setPlayerWorld(player.getWorld().getName());
-		event.setPlayerLocationX(player.getLocation().getX());
-		event.setPlayerLocationY(player.getLocation().getY());
-		event.setPlayerLocationZ(player.getLocation().getZ());
+		try {
 
-		if (!Util.empty(player.getItemInHand()) && !Util.empty(player.getItemInHand().getType())) {
-			Item playerItem = new Item();
-			playerItem.setType(player.getItemInHand().getType().toString());
-			playerItem.setAmount(player.getItemInHand().getAmount());
-			playerItem.setDurability(player.getItemInHand().getDurability());
-			playerItem.setItemInHand(true);
-			event.setPlayerItemInHand(playerItem);
-		}
+			event.setPlayerName(player.getName());
+			event.setPlayerWorld(player.getWorld().getName());
+			event.setPlayerLocationX(player.getLocation().getX());
+			event.setPlayerLocationY(player.getLocation().getY());
+			event.setPlayerLocationZ(player.getLocation().getZ());
 
-		if (!Util.empty(killer)) {
-			event.setKillerName(killer.getName());
-			event.setKillerWorld(killer.getWorld().getName());
-			event.setKillerLocationX(killer.getLocation().getX());
-			event.setKillerLocationY(killer.getLocation().getY());
-			event.setKillerLocationZ(killer.getLocation().getZ());
+			if (!Util.empty(player.getItemInHand()) && !Util.empty(player.getItemInHand().getType())) {
+				Item playerItem = new Item();
+				playerItem.setType(player.getItemInHand().getType().toString());
+				playerItem.setTypeId(player.getItemInHand().getTypeId());
+				playerItem.setAmount(player.getItemInHand().getAmount());
+				playerItem.setDurability(player.getItemInHand().getDurability());
+				playerItem.setItemInHand(true);
+				event.setPlayerItemInHand(playerItem);
+			}
 
-			Item killerItem = new Item();
-			killerItem.setType(killer.getItemInHand().getType().toString());
-			killerItem.setAmount(killer.getItemInHand().getAmount());
-			killerItem.setDurability(killer.getItemInHand().getDurability());
-			killerItem.setItemInHand(true);
-			event.setKillerItemInHand(killerItem);
+			if (!Util.empty(killer)) {
+				event.setKillerName(killer.getName());
+				event.setKillerWorld(killer.getWorld().getName());
+				event.setKillerLocationX(killer.getLocation().getX());
+				event.setKillerLocationY(killer.getLocation().getY());
+				event.setKillerLocationZ(killer.getLocation().getZ());
+
+				Item killerItem = new Item();
+				killerItem.setType(killer.getItemInHand().getType().toString());
+				killerItem.setTypeId(killer.getItemInHand().getTypeId());
+				killerItem.setAmount(killer.getItemInHand().getAmount());
+				killerItem.setDurability(killer.getItemInHand().getDurability());
+				killerItem.setItemInHand(true);
+				event.setKillerItemInHand(killerItem);
+			}
+
+		} catch (Exception exception) {
+			exception.printStackTrace();
 		}
 
 		event.setDeathDate(new Date());

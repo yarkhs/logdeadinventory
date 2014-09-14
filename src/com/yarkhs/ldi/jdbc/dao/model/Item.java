@@ -6,6 +6,7 @@ public class Item {
 
 	Integer id;
 	String type;
+	Integer typeId;
 	Integer Amount;
 	Short durability;
 	Boolean itemInHand;
@@ -107,10 +108,20 @@ public class Item {
 	}
 
 
+	public Integer getTypeId() {
+		return typeId;
+	}
+
+
+	public void setTypeId(Integer typeId) {
+		this.typeId = typeId;
+	}
+
+
 	@Override
 	public String toString() {
-		return "Item [id=" + id + ", type=" + type + ", Amount=" + Amount + ", durability=" + durability + ", itemInHand=" + itemInHand + ", hasEnchantment=" + hasEnchantment + ", enchantments="
-				+ enchantments + ", event=" + event + "]";
+		return "Item [id=" + id + ", type=" + type + ", typeId=" + typeId + ", Amount=" + Amount + ", durability=" + durability + ", itemInHand=" + itemInHand + ", hasEnchantment=" + hasEnchantment
+				+ ", enchantments=" + enchantments + ", event=" + event + "]";
 	}
 
 }
