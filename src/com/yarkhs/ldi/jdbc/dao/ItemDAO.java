@@ -106,7 +106,6 @@ public class ItemDAO implements BaseDAO {
 		stmt.setInt(3, item.getDurability());
 		stmt.setBoolean(4, item.getItemInHand());
 		stmt.setBoolean(5, item.getHasEnchantment());
-		stmt.setString(6, item.getType());
 
 		if (!Util.empty(item.getEvent())) {
 			stmt.setInt(7, item.getEvent().getId());
