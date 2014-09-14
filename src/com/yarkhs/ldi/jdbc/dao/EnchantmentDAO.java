@@ -82,8 +82,8 @@ public class EnchantmentDAO implements BaseDAO {
 		PreparedStatement stmt = connection.prepareStatement(sql);
 
 		stmt.setString(1, enchantment.getType());
-		stmt.setInt(3, enchantment.getLevel());
-		stmt.setInt(4, enchantment.getItem().getId());
+		stmt.setInt(2, enchantment.getLevel());
+		stmt.setInt(3, enchantment.getItem().getId());
 
 		try {
 			stmt.execute();

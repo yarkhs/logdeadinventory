@@ -108,7 +108,7 @@ public class ItemDAO implements BaseDAO {
 		stmt.setBoolean(5, item.getHasEnchantment());
 
 		if (!Util.empty(item.getEvent())) {
-			stmt.setInt(7, item.getEvent().getId());
+			stmt.setInt(6, item.getEvent().getId());
 		}
 
 		try {
