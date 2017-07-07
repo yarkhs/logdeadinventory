@@ -130,7 +130,7 @@ public class PlayerDeathListener implements Listener {
 		Player killer = player.getKiller();
 
 		Event event = new Event();
-
+ 
 		try {
 
 			event.setPlayerName(player.getName());
@@ -140,12 +140,11 @@ public class PlayerDeathListener implements Listener {
 			event.setPlayerLocationZ(player.getLocation().getZ());
 
 			if (!Util.empty(player.getItemInHand()) && !Util.empty(player.getItemInHand().getType())) {
-				Item playerItem = new Item();
-				playerItem.setType(player.getItemInHand().getType().toString());
-				playerItem.setTypeId(player.getItemInHand().getTypeId());
-				playerItem.setAmount(player.getItemInHand().getAmount());
-				playerItem.setDurability(player.getItemInHand().getDurability());
-				playerItem.setItemInHand(true);
+				Item playerItem = new Item(player.getItemInHand().getType().toString(), 
+											player.getItemInHand().getTypeId(), 
+											player.getItemInHand().getAmount(), 
+											player.getItemInHand().getDurability(), 
+											true);
 				event.setPlayerItemInHand(playerItem);
 			}
 
@@ -155,13 +154,12 @@ public class PlayerDeathListener implements Listener {
 				event.setKillerLocationX(killer.getLocation().getX());
 				event.setKillerLocationY(killer.getLocation().getY());
 				event.setKillerLocationZ(killer.getLocation().getZ());
-
-				Item killerItem = new Item();
-				killerItem.setType(killer.getItemInHand().getType().toString());
-				killerItem.setTypeId(killer.getItemInHand().getTypeId());
-				killerItem.setAmount(killer.getItemInHand().getAmount());
-				killerItem.setDurability(killer.getItemInHand().getDurability());
-				killerItem.setItemInHand(true);
+				
+				Item killerItem = new Item(killer.getItemInHand().getType().toString(), 
+											killer.getItemInHand().getTypeId(), 
+											killer.getItemInHand().getAmount(), 
+											killer.getItemInHand().getDurability(), 
+											true);
 				event.setKillerItemInHand(killerItem);
 			}
 
@@ -175,4 +173,5 @@ public class PlayerDeathListener implements Listener {
 
 		return event;
 	}
+	
 }

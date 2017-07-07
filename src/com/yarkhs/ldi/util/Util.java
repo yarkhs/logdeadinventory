@@ -1,9 +1,6 @@
 package com.yarkhs.ldi.util;
 
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -14,7 +11,6 @@ import java.util.Locale;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 
 public class Util {
 
@@ -26,16 +22,16 @@ public class Util {
 	}
 
 
-	public static String criptografar(String str) throws IOException {
-		String strCriptografada = Base64Coder.encodeString(str);
-		return URLEncoder.encode(strCriptografada, "ISO-8859-1");
-	}
-
-
-	public static String descriptografar(String str) throws IOException {
-		String strDescriptografada = URLDecoder.decode(str, "ISO-8859-1");
-		return Base64Coder.decodeString(strDescriptografada);
-	}
+//	public static String criptografar(String str) throws IOException {
+//		String strCriptografada = Base64Coder.encodeString(str);
+//		return URLEncoder.encode(strCriptografada, "ISO-8859-1");
+//	}
+//
+//
+//	public static String descriptografar(String str) throws IOException {
+//		String strDescriptografada = URLDecoder.decode(str, "ISO-8859-1");
+//		return Base64Coder.decodeString(strDescriptografada);
+//	}
 
 
 	/**

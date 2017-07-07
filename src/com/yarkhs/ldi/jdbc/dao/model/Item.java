@@ -14,6 +14,16 @@ public class Item {
 	List<Enchantment> enchantments;
 	Event event;
 
+	
+	public Item(String type, Integer typeId, Integer amount, Short durability, Boolean itemInHand) {
+		super();
+		this.type = type;
+		this.typeId = typeId;
+		Amount = amount;
+		this.durability = durability;
+		this.itemInHand = itemInHand;
+	}
+	
 
 	public Item() {
 		super();
