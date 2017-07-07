@@ -5,6 +5,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import org.bukkit.entity.Player;
+
+import com.yarkhs.ldi.util.Util;
+
 public class Event {
 
 	Integer id;
@@ -36,6 +40,40 @@ public class Event {
 	public Event(Integer id) {
 		super();
 		this.id = id;
+	}
+
+
+	public void setPlayer (Player player) {
+		setPlayerName(player.getName());
+		setPlayerWorld(player.getWorld().getName());
+		setPlayerLocationX(player.getLocation().getX());
+		setPlayerLocationY(player.getLocation().getY());
+		setPlayerLocationZ(player.getLocation().getZ());
+		
+		if (!Util.empty(player.getItemInHand()) && !Util.empty(player.getItemInHand().getType())) {
+			Item playerItem = new Item(player.getItemInHand().getType().toString(), 
+										player.getItemInHand().getTypeId(), 
+										player.getItemInHand().getAmount(), 
+										player.getItemInHand().getDurability(), 
+										true);
+			setPlayerItemInHand(playerItem);
+		}
+	}
+	
+	
+	public void setKiller (Player killer) {
+		setKillerName(killer.getName());
+		setKillerWorld(killer.getWorld().getName());
+		setKillerLocationX(killer.getLocation().getX());
+		setKillerLocationY(killer.getLocation().getY());
+		setKillerLocationZ(killer.getLocation().getZ());
+		
+		Item killerItem = new Item(killer.getItemInHand().getType().toString(), 
+									killer.getItemInHand().getTypeId(), 
+									killer.getItemInHand().getAmount(), 
+									killer.getItemInHand().getDurability(), 
+									true);
+		setKillerItemInHand(killerItem);
 	}
 
 
@@ -224,10 +262,6 @@ public class Event {
 		return sdf.format(this.deathDate);
 	}
 
-
-	// public java.sql.Date getDeathDateSql() {
-	// return new java.sql.Date(deathDate.getTime());
-	// }
 
 	public void setPlayerLocationX(Double x) {
 		this.playerLocationX = x.intValue();

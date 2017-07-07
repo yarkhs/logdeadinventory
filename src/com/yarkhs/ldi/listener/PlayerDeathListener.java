@@ -132,35 +132,10 @@ public class PlayerDeathListener implements Listener {
 		Event event = new Event();
  
 		try {
-
-			event.setPlayerName(player.getName());
-			event.setPlayerWorld(player.getWorld().getName());
-			event.setPlayerLocationX(player.getLocation().getX());
-			event.setPlayerLocationY(player.getLocation().getY());
-			event.setPlayerLocationZ(player.getLocation().getZ());
-
-			if (!Util.empty(player.getItemInHand()) && !Util.empty(player.getItemInHand().getType())) {
-				Item playerItem = new Item(player.getItemInHand().getType().toString(), 
-											player.getItemInHand().getTypeId(), 
-											player.getItemInHand().getAmount(), 
-											player.getItemInHand().getDurability(), 
-											true);
-				event.setPlayerItemInHand(playerItem);
-			}
+			event.setPlayer(player);
 
 			if (!Util.empty(killer)) {
-				event.setKillerName(killer.getName());
-				event.setKillerWorld(killer.getWorld().getName());
-				event.setKillerLocationX(killer.getLocation().getX());
-				event.setKillerLocationY(killer.getLocation().getY());
-				event.setKillerLocationZ(killer.getLocation().getZ());
-				
-				Item killerItem = new Item(killer.getItemInHand().getType().toString(), 
-											killer.getItemInHand().getTypeId(), 
-											killer.getItemInHand().getAmount(), 
-											killer.getItemInHand().getDurability(), 
-											true);
-				event.setKillerItemInHand(killerItem);
+				event.setKiller(killer);
 			}
 
 		} catch (Exception exception) {
