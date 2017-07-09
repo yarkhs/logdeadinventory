@@ -33,7 +33,7 @@ public class Util {
 //		return Base64Coder.decodeString(strDescriptografada);
 //	}
 
-
+ 
 	/**
 	 * Função do método: <br>
 	 * - Remover caracteres especiais e colocar espaço em branco no lugar dos mesmos; <br>

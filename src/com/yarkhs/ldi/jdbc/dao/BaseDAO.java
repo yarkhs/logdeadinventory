@@ -11,7 +11,7 @@ public interface BaseDAO {
 	public void createTableSqlite() throws SQLException;
 
 
-	public void insert(Object object) throws SQLException;
+	public Integer insert(Object object) throws SQLException;
 
 
 	public List<?> listAll() throws SQLException;

@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.bukkit.Material;
 
+import com.yarkhs.ldi.LdiConfig;
 import com.yarkhs.ldi.jdbc.Conexao;
 import com.yarkhs.ldi.jdbc.dao.model.Enchantment;
 import com.yarkhs.ldi.jdbc.dao.model.Item;
@@ -18,6 +19,11 @@ public class PluginDAO {
 
 	private final Connection connection;
 
+
+	public PluginDAO(LdiConfig ldiConfig) throws SQLException {
+		this(ldiConfig.getIsMySQL(), ldiConfig.getServer(), ldiConfig.getDatabase(), ldiConfig.getUser(), ldiConfig.getPassword());
+	}
+	
 
 	public PluginDAO(Boolean isMySQL, String server, String database, String user, String password) throws SQLException {
 		this.connection = Conexao.getConnection(isMySQL, server, database, user, password);

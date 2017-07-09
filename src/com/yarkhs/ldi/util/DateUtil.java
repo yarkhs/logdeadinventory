@@ -519,7 +519,8 @@ public class DateUtil {
 		// Para cada mes e ano, vai de mes em mes pegar o ultimo dia para import
 		// acumulando
 		// no total de dias. Ja leva em consideracao ano bissesto
-		while ((curTime.get(GregorianCalendar.YEAR) < baseTime.get(GregorianCalendar.YEAR)) || (curTime.get(GregorianCalendar.MONTH) < baseTime.get(GregorianCalendar.MONTH))) {
+		while ((curTime.get(GregorianCalendar.YEAR) < baseTime.get(GregorianCalendar.YEAR))
+				|| (curTime.get(GregorianCalendar.MONTH) < baseTime.get(GregorianCalendar.MONTH))) {
 
 			int max_day = curTime.getActualMaximum(GregorianCalendar.DAY_OF_MONTH);
 			result_months += max_day;

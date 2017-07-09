@@ -1,5 +1,10 @@
 package com.yarkhs.ldi.jdbc.dao.model;
 
+import java.sql.SQLException;
+
+import com.yarkhs.ldi.LdiConfig;
+import com.yarkhs.ldi.jdbc.dao.EnchantmentDAO;
+
 public class Enchantment {
 
 	Integer id;
@@ -45,6 +50,12 @@ public class Enchantment {
 
 	public void setItem(Item item) {
 		this.item = item;
+	}
+
+
+	public void save(LdiConfig ldiConfig) throws SQLException {
+		EnchantmentDAO enchantmentDAO = new EnchantmentDAO(ldiConfig);
+		this.id = enchantmentDAO.insert(this);
 	}
 
 

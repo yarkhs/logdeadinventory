@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.mysql.jdbc.Statement;
+import com.yarkhs.ldi.LdiConfig;
 import com.yarkhs.ldi.jdbc.Conexao;
 import com.yarkhs.ldi.jdbc.dao.model.Enchantment;
 import com.yarkhs.ldi.jdbc.dao.model.Item;
@@ -14,6 +16,11 @@ import com.yarkhs.ldi.jdbc.dao.model.Item;
 public class EnchantmentDAO implements BaseDAO {
 
 	private final Connection connection;
+
+
+	public EnchantmentDAO(LdiConfig ldiConfig) throws SQLException {
+		this(ldiConfig.getIsMySQL(), ldiConfig.getServer(), ldiConfig.getDatabase(), ldiConfig.getUser(), ldiConfig.getPassword());
+	}
 
 
 	public EnchantmentDAO(Boolean isMySQL, String server, String database, String user, String password) throws SQLException {
@@ -75,23 +82,33 @@ public class EnchantmentDAO implements BaseDAO {
 
 
 	@Override
-	public void insert(Object object) throws SQLException {
+	public Integer insert(Object object) throws SQLException {
 
 		Enchantment enchantment = (Enchantment) object;
 		String sql = "insert into ldi_enchantments (type, level, item_id) values (?,?,?)";
-		PreparedStatement stmt = connection.prepareStatement(sql);
+		PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
 		stmt.setString(1, enchantment.getType());
 		stmt.setInt(2, enchantment.getLevel());
 		stmt.setInt(3, enchantment.getItem().getId());
 
-		try {
-			stmt.execute();
-		} catch (Exception e) {
-			e.printStackTrace();
+		int affectedRows = stmt.executeUpdate();
+
+		if (affectedRows == 0) {
+			throw new SQLException("Creating user failed, no rows affected.");
+		}
+
+		try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+			if (generatedKeys.next()) {
+				enchantment.setId(generatedKeys.getInt(1));
+			} else {
+				throw new SQLException("Creating user failed, no ID obtained.");
+			}
 		} finally {
 			stmt.close();
 		}
+
+		return enchantment.getId();
 	}
 
 
@@ -157,7 +174,7 @@ public class EnchantmentDAO implements BaseDAO {
 	}
 
 
-	public List<Enchantment> findByItemId(Integer itemId) throws SQLException {
+	public List<Enchantment> listByItemId(Integer itemId) throws SQLException {
 
 		PreparedStatement stmt = connection.prepareStatement("select * from ldi_enchantments where item_id=" + itemId);
 

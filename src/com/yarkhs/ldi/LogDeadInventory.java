@@ -62,9 +62,9 @@ public final class LogDeadInventory extends JavaPlugin implements Listener {
 		getServer().getPluginManager().registerEvents(new PlayerDeathListener(ldiConfig), this);
 
 		try {
-			EventDAO eventDAO = new EventDAO(ldiConfig.getIsMySQL(), ldiConfig.getServer(), ldiConfig.getDatabase(), ldiConfig.getUser(), ldiConfig.getPassword());
-			ItemDAO itemDAO = new ItemDAO(ldiConfig.getIsMySQL(), ldiConfig.getServer(), ldiConfig.getDatabase(), ldiConfig.getUser(), ldiConfig.getPassword());
-			EnchantmentDAO enchantmentDAO = new EnchantmentDAO(ldiConfig.getIsMySQL(), ldiConfig.getServer(), ldiConfig.getDatabase(), ldiConfig.getUser(), ldiConfig.getPassword());
+			EventDAO eventDAO = new EventDAO(ldiConfig);
+			ItemDAO itemDAO = new ItemDAO(ldiConfig);
+			EnchantmentDAO enchantmentDAO = new EnchantmentDAO(ldiConfig);
 
 			if (ldiConfig.getIsMySQL()) {
 				eventDAO.createTableMySql();
@@ -190,8 +190,10 @@ public final class LogDeadInventory extends JavaPlugin implements Listener {
 
 					player.sendMessage(ChatColor.GREEN + "****************************************************************");
 					player.sendMessage(ChatColor.YELLOW + "LogDeadInventory will save the inventory of players every time they die");
-					player.sendMessage(ChatColor.YELLOW + "/ldi list " + ChatColor.RED + "[playerName] [dd/mm/yyyy] (optional)" + ChatColor.AQUA + "- show summary list of deaths per player");
-					player.sendMessage(ChatColor.YELLOW + "/ldi info " + ChatColor.RED + "[id]" + ChatColor.AQUA + "- show all info about one death event");
+					player.sendMessage(ChatColor.YELLOW + "/ldi list " + ChatColor.RED + "[playerName] [dd/mm/yyyy] (optional)" + ChatColor.AQUA
+							+ "- show summary list of deaths per player");
+					player.sendMessage(
+							ChatColor.YELLOW + "/ldi info " + ChatColor.RED + "[id]" + ChatColor.AQUA + "- show all info about one death event");
 					player.sendMessage(ChatColor.YELLOW + "/ldi recover " + ChatColor.RED + "[id]" + ChatColor.AQUA + "- recover items using id");
 					player.sendMessage(ChatColor.GREEN + "****************************************************************");
 
@@ -237,15 +239,15 @@ public final class LogDeadInventory extends JavaPlugin implements Listener {
 			}
 
 			try {
-				EventDAO eventDAO = new EventDAO(ldiConfig.getIsMySQL(), ldiConfig.getServer(), ldiConfig.getDatabase(), ldiConfig.getUser(), ldiConfig.getPassword());
-				ItemDAO itemDAO = new ItemDAO(ldiConfig.getIsMySQL(), ldiConfig.getServer(), ldiConfig.getDatabase(), ldiConfig.getUser(), ldiConfig.getPassword());
+				EventDAO eventDAO = new EventDAO(ldiConfig);
+				ItemDAO itemDAO = new ItemDAO(ldiConfig);
 
 				List<Event> events = null;
 
 				if (Util.empty(deathDate)) {
-					events = eventDAO.findByPlayer(playerName);
+					events = eventDAO.listByPlayer(playerName);
 				} else {
-					events = eventDAO.findByPlayerAndDate(playerName, deathDate);
+					events = eventDAO.listByPlayerAndDate(playerName, deathDate);
 				}
 
 				String str = ChatColor.WHITE + "-" + ChatColor.GREEN;
@@ -261,8 +263,8 @@ public final class LogDeadInventory extends JavaPlugin implements Listener {
 						killerName = event.getKillerName();
 					}
 
-					player.sendMessage(ChatColor.WHITE + event.getId().toString() + str2 + event.getDeathReason() + str2 + event.getDeathDateString() + str2 + killerName + str2
-							+ itemDAO.findByEventId(event.getId()).size());
+					player.sendMessage(ChatColor.WHITE + event.getId().toString() + str2 + event.getDeathReason() + str2 + event.getDeathDateString()
+							+ str2 + killerName + str2 + itemDAO.listByEventId(event.getId()).size());
 				}
 			} catch (SQLException e) {
 				player.sendMessage(PrefixRed + "Problems with sql");
@@ -293,39 +295,37 @@ public final class LogDeadInventory extends JavaPlugin implements Listener {
 			}
 
 			try {
-				EventDAO eventDAO = new EventDAO(ldiConfig.getIsMySQL(), ldiConfig.getServer(), ldiConfig.getDatabase(), ldiConfig.getUser(), ldiConfig.getPassword());
-				ItemDAO itemDAO = new ItemDAO(ldiConfig.getIsMySQL(), ldiConfig.getServer(), ldiConfig.getDatabase(), ldiConfig.getUser(), ldiConfig.getPassword());
-				EnchantmentDAO enchantmentDAO = new EnchantmentDAO(ldiConfig.getIsMySQL(), ldiConfig.getServer(), ldiConfig.getDatabase(), ldiConfig.getUser(), ldiConfig.getPassword());
+				EventDAO eventDAO = new EventDAO(ldiConfig);
+				ItemDAO itemDAO = new ItemDAO(ldiConfig);
+				EnchantmentDAO enchantmentDAO = new EnchantmentDAO(ldiConfig);
 
 				Event event = eventDAO.findById(eventId);
 
 				if (!Util.empty(event.getPlayerItemInHand())) {
 					Integer itemId = event.getPlayerItemInHand().getId();
 					event.setPlayerItemInHand(itemDAO.findById(itemId));
-					event.getPlayerItemInHand().setEnchantments(enchantmentDAO.findByItemId(itemId));
+					event.getPlayerItemInHand().setEnchantments(enchantmentDAO.listByItemId(itemId));
 				}
 
 				if (!Util.empty(event.getKillerItemInHand())) {
 					Integer itemId = event.getKillerItemInHand().getId();
 					event.setKillerItemInHand(itemDAO.findById(itemId));
-					event.getKillerItemInHand().setEnchantments(enchantmentDAO.findByItemId(itemId));
+					event.getKillerItemInHand().setEnchantments(enchantmentDAO.listByItemId(itemId));
 				}
 
 				player.sendMessage(ChatColor.YELLOW + "Id : " + ChatColor.AQUA + event.getId().toString());
 				player.sendMessage(ChatColor.YELLOW + "Death Reason : " + ChatColor.AQUA + event.getDeathReason());
 				player.sendMessage(ChatColor.YELLOW + "Death Date : " + ChatColor.AQUA + event.getDeathDateString());
-				player.sendMessage(ChatColor.YELLOW + "Drop Count : " + ChatColor.AQUA + itemDAO.findByEventId(event.getId()).size());
+				player.sendMessage(ChatColor.YELLOW + "Drop Count : " + ChatColor.AQUA + itemDAO.listByEventId(event.getId()).size());
 
 				player.sendMessage(ChatColor.YELLOW + "Player : " + ChatColor.AQUA + event.getPlayerName());
 				player.sendMessage(ChatColor.YELLOW + "Player xp : " + ChatColor.AQUA + event.getXpLost());
-				player.sendMessage(ChatColor.YELLOW + "Player world: " + ChatColor.AQUA + event.getPlayerWorld());
-				player.sendMessage(ChatColor.YELLOW + "Player location : " + ChatColor.AQUA + event.getPlayerLocationX() + ", " + event.getKillerLocationY() + ", " + event.getPlayerLocationZ());
+				player.sendMessage(ChatColor.YELLOW + "Player location : " + ChatColor.AQUA + event.getPlayerLocation());
 				player.sendMessage(ChatColor.YELLOW + "Player item in hand: " + ChatColor.AQUA + event.getPlayerItemInHand().getType());
 
 				if (!Util.empty(event.getKillerName())) {
 					player.sendMessage(ChatColor.YELLOW + "Killer : " + ChatColor.AQUA + event.getKillerName());
-					player.sendMessage(ChatColor.YELLOW + "Killer world: " + ChatColor.AQUA + event.getKillerWorld());
-					player.sendMessage(ChatColor.YELLOW + "Killer location : " + ChatColor.AQUA + event.getKillerLocationX() + ", " + event.getKillerLocationY() + ", " + event.getKillerLocationZ());
+					player.sendMessage(ChatColor.YELLOW + "Killer location : " + ChatColor.AQUA + event.getKillerLocation());
 					player.sendMessage(ChatColor.YELLOW + "Killer item in hand: " + ChatColor.AQUA + event.getKillerItemInHand().getType());
 				}
 
@@ -357,9 +357,9 @@ public final class LogDeadInventory extends JavaPlugin implements Listener {
 			}
 
 			try {
-				EventDAO eventDAO = new EventDAO(ldiConfig.getIsMySQL(), ldiConfig.getServer(), ldiConfig.getDatabase(), ldiConfig.getUser(), ldiConfig.getPassword());
-				ItemDAO itemDAO = new ItemDAO(ldiConfig.getIsMySQL(), ldiConfig.getServer(), ldiConfig.getDatabase(), ldiConfig.getUser(), ldiConfig.getPassword());
-				EnchantmentDAO enchantmentDAO = new EnchantmentDAO(ldiConfig.getIsMySQL(), ldiConfig.getServer(), ldiConfig.getDatabase(), ldiConfig.getUser(), ldiConfig.getPassword());
+				EventDAO eventDAO = new EventDAO(ldiConfig);
+				ItemDAO itemDAO = new ItemDAO(ldiConfig);
+				EnchantmentDAO enchantmentDAO = new EnchantmentDAO(ldiConfig);
 
 				Event event = eventDAO.findById(eventId);
 
@@ -367,11 +367,11 @@ public final class LogDeadInventory extends JavaPlugin implements Listener {
 				playerExact.setExp(playerExact.getExp() + event.getXpLost());
 				PlayerInventory inventory = playerExact.getInventory();
 
-				for (Item item : itemDAO.findByEventId(eventId)) {
+				for (Item item : itemDAO.listByEventId(eventId)) {
 					ItemStack itemstack = new ItemStack(Material.getMaterial(item.getTypeId()), item.getAmount(), item.getDurability());
 
 					if (item.getHasEnchantment()) {
-						item.setEnchantments(enchantmentDAO.findByItemId(item.getId()));
+						item.setEnchantments(enchantmentDAO.listByItemId(item.getId()));
 
 						for (com.yarkhs.ldi.jdbc.dao.model.Enchantment enchantment : item.getEnchantments()) {
 							itemstack.addEnchantment(Enchantment.getByName(enchantment.getType()), enchantment.getLevel());

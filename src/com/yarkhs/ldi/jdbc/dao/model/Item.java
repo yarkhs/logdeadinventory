@@ -1,6 +1,12 @@
 package com.yarkhs.ldi.jdbc.dao.model;
 
+import java.sql.SQLException;
 import java.util.List;
+
+import org.bukkit.inventory.ItemStack;
+
+import com.yarkhs.ldi.LdiConfig;
+import com.yarkhs.ldi.jdbc.dao.ItemDAO;
 
 public class Item {
 
@@ -9,25 +15,27 @@ public class Item {
 	Integer typeId;
 	Integer Amount;
 	Short durability;
-	Boolean itemInHand;
 	Boolean hasEnchantment;
 	List<Enchantment> enchantments;
 	Event event;
 
-	
+
+	public Item(ItemStack item) {
+		this(item.getType().toString(), item.getTypeId(), item.getAmount(), item.getDurability(), true);
+	}
+
+
 	public Item(String type, Integer typeId, Integer amount, Short durability, Boolean itemInHand) {
 		super();
 		this.type = type;
 		this.typeId = typeId;
 		Amount = amount;
 		this.durability = durability;
-		this.itemInHand = itemInHand;
 	}
-	
+
 
 	public Item() {
 		super();
-		itemInHand = false;
 		hasEnchantment = false;
 	}
 
@@ -83,16 +91,6 @@ public class Item {
 	}
 
 
-	public Boolean getItemInHand() {
-		return itemInHand;
-	}
-
-
-	public void setItemInHand(Boolean itemInHand) {
-		this.itemInHand = itemInHand;
-	}
-
-
 	public void setEvent(Event event) {
 		this.event = event;
 	}
@@ -128,10 +126,23 @@ public class Item {
 	}
 
 
+	public void save(LdiConfig ldiConfig) throws SQLException {
+		ItemDAO itemDAO = new ItemDAO(ldiConfig);
+
+		this.id = itemDAO.insert(this);
+
+		for (com.yarkhs.ldi.jdbc.dao.model.Enchantment enchantment : getEnchantments()) {
+			enchantment.setItem(this);
+			enchantment.save(ldiConfig);
+		}
+
+	}
+
+
 	@Override
 	public String toString() {
-		return "Item [id=" + id + ", type=" + type + ", typeId=" + typeId + ", Amount=" + Amount + ", durability=" + durability + ", itemInHand=" + itemInHand + ", hasEnchantment=" + hasEnchantment
-				+ ", enchantments=" + enchantments + ", event=" + event + "]";
+		return "Item [id=" + id + ", type=" + type + ", typeId=" + typeId + ", Amount=" + Amount + ", durability=" + durability + ", hasEnchantment="
+				+ hasEnchantment + ", enchantments=" + enchantments + ", event=" + event + "]";
 	}
 
 }

@@ -1,29 +1,33 @@
 package com.yarkhs.ldi.jdbc.dao.model;
 
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map.Entry;
 
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.inventory.ItemStack;
 
+import com.yarkhs.ldi.LdiConfig;
+import com.yarkhs.ldi.jdbc.dao.EventDAO;
 import com.yarkhs.ldi.util.Util;
 
 public class Event {
 
 	Integer id;
 	String playerName;
-	String playerWorld;
-	Integer playerLocationX;
-	Integer playerLocationY;
-	Integer playerLocationZ;
+	String playerLocation;
 	Item playerItemInHand;
 
 	String killerName;
-	String killerWorld;
-	Integer killerLocationX;
-	Integer killerLocationY;
-	Integer killerLocationZ;
+	String killerLocation;
 	Item killerItemInHand;
 
 	String deathReason;
@@ -43,37 +47,49 @@ public class Event {
 	}
 
 
-	public void setPlayer (Player player) {
+	public Event(PlayerDeathEvent e) {
+		super();
+		Player player = e.getEntity();
+
 		setPlayerName(player.getName());
-		setPlayerWorld(player.getWorld().getName());
-		setPlayerLocationX(player.getLocation().getX());
-		setPlayerLocationY(player.getLocation().getY());
-		setPlayerLocationZ(player.getLocation().getZ());
-		
-		if (!Util.empty(player.getItemInHand()) && !Util.empty(player.getItemInHand().getType())) {
-			Item playerItem = new Item(player.getItemInHand().getType().toString(), 
-										player.getItemInHand().getTypeId(), 
-										player.getItemInHand().getAmount(), 
-										player.getItemInHand().getDurability(), 
-										true);
-			setPlayerItemInHand(playerItem);
+		setPlayerLocation(player.getWorld(), player.getLocation());
+		setPlayerItemInHand(new Item(player.getItemInHand()));
+
+		if (!Util.empty(player.getKiller())) {
+			setKillerName(player.getKiller().getName());
+			setKillerLocation(player.getKiller().getWorld(), player.getKiller().getLocation());
+			setKillerItemInHand(new Item(player.getKiller().getItemInHand()));
 		}
-	}
-	
-	
-	public void setKiller (Player killer) {
-		setKillerName(killer.getName());
-		setKillerWorld(killer.getWorld().getName());
-		setKillerLocationX(killer.getLocation().getX());
-		setKillerLocationY(killer.getLocation().getY());
-		setKillerLocationZ(killer.getLocation().getZ());
-		
-		Item killerItem = new Item(killer.getItemInHand().getType().toString(), 
-									killer.getItemInHand().getTypeId(), 
-									killer.getItemInHand().getAmount(), 
-									killer.getItemInHand().getDurability(), 
-									true);
-		setKillerItemInHand(killerItem);
+
+		setDeathDate(new Date());
+		setDeathReason(e.getDeathMessage());
+		setXpLost(e.getDroppedExp());
+
+		this.items = new ArrayList<Item>();
+
+		for (ItemStack itemStack : e.getDrops()) {
+			Item item = new Item(itemStack.getType().toString(), itemStack.getTypeId(), itemStack.getAmount(), itemStack.getDurability(), false);
+
+			List<com.yarkhs.ldi.jdbc.dao.model.Enchantment> enchantments = new ArrayList<com.yarkhs.ldi.jdbc.dao.model.Enchantment>();
+			// Gets a map containing all enchantments and their levels on this item.
+			for (Entry<Enchantment, Integer> entry : itemStack.getEnchantments().entrySet()) {
+				Enchantment key = entry.getKey(); // enchantment
+				Integer value = entry.getValue(); // level
+
+				com.yarkhs.ldi.jdbc.dao.model.Enchantment enchantment = new com.yarkhs.ldi.jdbc.dao.model.Enchantment();
+				enchantment.setType(key.getName());
+				enchantment.setLevel(value);
+
+				enchantments.add(enchantment);
+			}
+
+			item.setEnchantments(enchantments);
+			if (item.getEnchantments().size() > 0) {
+				item.setHasEnchantment(true);
+			}
+
+			this.items.add(item);
+		}
 	}
 
 
@@ -84,126 +100,6 @@ public class Event {
 
 	public void setId(Integer id) {
 		this.id = id;
-	}
-
-
-	public String getPlayerName() {
-		return playerName;
-	}
-
-
-	public void setPlayerName(String playerName) {
-		this.playerName = playerName;
-	}
-
-
-	public String getPlayerWorld() {
-		return playerWorld;
-	}
-
-
-	public void setPlayerWorld(String playerWorld) {
-		this.playerWorld = playerWorld;
-	}
-
-
-	public Integer getPlayerLocationX() {
-		return playerLocationX;
-	}
-
-
-	public void setPlayerLocationX(Integer playerLocationX) {
-		this.playerLocationX = playerLocationX;
-	}
-
-
-	public Integer getPlayerLocationY() {
-		return playerLocationY;
-	}
-
-
-	public void setPlayerLocationY(Integer playerLocationY) {
-		this.playerLocationY = playerLocationY;
-	}
-
-
-	public Integer getPlayerLocationZ() {
-		return playerLocationZ;
-	}
-
-
-	public void setPlayerLocationZ(Integer playerLocationZ) {
-		this.playerLocationZ = playerLocationZ;
-	}
-
-
-	public Item getPlayerItemInHand() {
-		return playerItemInHand;
-	}
-
-
-	public void setPlayerItemInHand(Item playerItemInHand) {
-		this.playerItemInHand = playerItemInHand;
-	}
-
-
-	public String getKillerName() {
-		return killerName;
-	}
-
-
-	public void setKillerName(String killerName) {
-		this.killerName = killerName;
-	}
-
-
-	public String getKillerWorld() {
-		return killerWorld;
-	}
-
-
-	public void setKillerWorld(String killerWorld) {
-		this.killerWorld = killerWorld;
-	}
-
-
-	public Integer getKillerLocationX() {
-		return killerLocationX;
-	}
-
-
-	public void setKillerLocationX(Integer killerLocationX) {
-		this.killerLocationX = killerLocationX;
-	}
-
-
-	public Integer getKillerLocationY() {
-		return killerLocationY;
-	}
-
-
-	public void setKillerLocationY(Integer killerLocationY) {
-		this.killerLocationY = killerLocationY;
-	}
-
-
-	public Integer getKillerLocationZ() {
-		return killerLocationZ;
-	}
-
-
-	public void setKillerLocationZ(Integer killerLocationZ) {
-		this.killerLocationZ = killerLocationZ;
-	}
-
-
-	public Item getKillerItemInHand() {
-		return killerItemInHand;
-	}
-
-
-	public void setKillerItemInHand(Item killerItemInHand) {
-		this.killerItemInHand = killerItemInHand;
 	}
 
 
@@ -263,42 +159,104 @@ public class Event {
 	}
 
 
-	public void setPlayerLocationX(Double x) {
-		this.playerLocationX = x.intValue();
+	public List<Item> getItems() {
+		return items;
 	}
 
 
-	public void setPlayerLocationY(Double y) {
-		this.playerLocationY = y.intValue();
+	public void setItems(List<Item> items) {
+		this.items = items;
 	}
 
 
-	public void setPlayerLocationZ(Double z) {
-		this.playerLocationZ = z.intValue();
+	public String getPlayerName() {
+		return playerName;
 	}
 
 
-	public void setKillerLocationX(Double x) {
-		this.killerLocationX = x.intValue();
+	public void setPlayerName(String playerName) {
+		this.playerName = playerName;
 	}
 
 
-	public void setKillerLocationY(Double y) {
-		this.killerLocationY = y.intValue();
+	public String getPlayerLocation() {
+		return playerLocation;
 	}
 
 
-	public void setKillerLocationZ(Double z) {
-		this.killerLocationZ = z.intValue();
+	public void setPlayerLocation(String playerLocation) {
+		this.playerLocation = playerLocation;
 	}
 
 
-	@Override
-	public String toString() {
-		return "Event [id=" + id + ", playerName=" + playerName + ", playerWorld=" + playerWorld + ", playerLocationX=" + playerLocationX + ", playerLocationY=" + playerLocationY
-				+ ", playerLocationZ=" + playerLocationZ + ", playerItemInHand=" + playerItemInHand + ", killerName=" + killerName + ", killerWorld=" + killerWorld + ", killerLocationX="
-				+ killerLocationX + ", killerLocationY=" + killerLocationY + ", killerLocationZ=" + killerLocationZ + ", killerItemInHand=" + killerItemInHand + ", deathReason=" + deathReason
-				+ ", deathDate=" + deathDate + ", xpLost=" + xpLost + ", items=" + items + "]";
+	public void setPlayerLocation(World world, Location location) {
+		this.playerLocation = world.getName() + " - " + location.getX() + "," + location.getY() + "," + location.getZ();
+	}
+
+
+	public Item getPlayerItemInHand() {
+		return playerItemInHand;
+	}
+
+
+	public void setPlayerItemInHand(Item playerItemInHand) {
+		this.playerItemInHand = playerItemInHand;
+	}
+
+
+	public String getKillerName() {
+		return killerName;
+	}
+
+
+	public void setKillerName(String killerName) {
+		this.killerName = killerName;
+	}
+
+
+	public String getKillerLocation() {
+		return killerLocation;
+	}
+
+
+	public void setKillerLocation(String killerLocation) {
+		this.killerLocation = killerLocation;
+	}
+
+
+	public void setKillerLocation(World world, Location location) {
+		this.killerLocation = world.getName() + " - " + location.getX() + "," + location.getY() + "," + location.getZ();
+	}
+
+
+	public Item getKillerItemInHand() {
+		return killerItemInHand;
+	}
+
+
+	public void setKillerItemInHand(Item killerItemInHand) {
+		this.killerItemInHand = killerItemInHand;
+	}
+
+
+	public void save(LdiConfig ldiConfig) throws SQLException {
+		EventDAO eventDAO = new EventDAO(ldiConfig);
+
+		if (!Util.empty(playerItemInHand)) {
+			playerItemInHand.save(ldiConfig);
+		}
+
+		if (!Util.empty(killerName) && !Util.empty(killerItemInHand)) {
+			killerItemInHand.save(ldiConfig);
+		}
+
+		this.id = eventDAO.insert(this);
+
+		for (Item item : getItens()) {
+			item.setEvent(this);
+			item.save(ldiConfig);
+		}
+
 	}
 
 }
